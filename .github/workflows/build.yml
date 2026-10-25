@@ -7,10 +7,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Configurar Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
@@ -25,7 +25,7 @@ jobs:
         pyinstaller --onefile app_auditoria.py
 
     - name: Subir el .EXE generado
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Auditoria-App-EXE
         path: dist/app_auditoria.exe
