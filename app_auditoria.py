@@ -22,10 +22,8 @@ from openpyxl.styles import PatternFill, Font
 def obtener_ruta_base():
     """ Obtiene la ruta del directorio actual donde se está ejecutando el .exe o el script. """
     if getattr(sys, 'frozen', False):
-        # Si el programa está ejecutándose como un archivo .exe compilado
         return os.path.dirname(sys.executable)
     else:
-        # Si se está ejecutando como script .py normal
         return os.path.dirname(os.path.abspath(__file__))
 
 base_path = obtener_ruta_base()
@@ -39,7 +37,6 @@ codigos_especiales = {
     'FX0041', 'FX0050', 'FX9022'
 }
 
-# --- GRUPOS DE PRINCIPIO ACTIVO (P.A.) Y SUS FAMILIAS ---
 grupos_pa = {
     "Tacrolimus": {'FX0012', 'FX0031', 'FX0033', 'FX0041'},
     "Vancomicina": {'FK3055', 'FK3065'},
@@ -79,9 +76,6 @@ codigos_dosis_alta_especial = {
 
 sku_excluidos_upc = {'FD4023', 'FD4024', 'FD4012', 'FI9040'}
 
-# ==========================================
-# 🧱 PASO 1: LÓGICA DE AUDITORÍA CON FECHAS CSV
-# ==========================================
 def ejecutar_auditoria(pdf_files, csv_path, cache_data):
     fecha_limite_normal = datetime.now() - timedelta(days=5)
     fecha_limite_extendida = datetime.now() - timedelta(days=10)
@@ -328,9 +322,6 @@ def ejecutar_auditoria(pdf_files, csv_path, cache_data):
         'resultados_totales': resultados_totales
     }, nuevos_procesados
 
-# ==========================================
-# 🧱 PASO 2: LÓGICA DE DOSIS ALTA
-# ==========================================
 def ejecutar_dosis_alta(ruta, umbral, codigos_dosis_especial):
     datos = []
     with pdfplumber.open(ruta) as pdf:
@@ -372,9 +363,6 @@ def ejecutar_dosis_alta(ruta, umbral, codigos_dosis_especial):
                             datos.append({'Número de Pedido': num_pedido, 'Código': codigo, 'Cantidad': cant, 'Tipo': 'Normal'})
     return pd.DataFrame(datos)
 
-# ==========================================
-# 🧱 PASO 4: EXTRACCIÓN DE CANTIDADES HISTÓRICAS
-# ==========================================
 def ejecutar_cantidades_alertas(pdf_files, cache_data):
     processed_cant_olas = cache_data.get('processed_cant_olas', set()) if cache_data else set()
     memoria_cantidades_pedidos = cache_data.get('memoria_cantidades_pedidos', {}) if cache_data else {}
@@ -427,9 +415,6 @@ def ejecutar_cantidades_alertas(pdf_files, cache_data):
 
     return memoria_cantidades_pedidos, processed_cant_olas, nuevos_procesados
 
-# ==========================================
-# 🧠 PASO 3 Y 5: ORQUESTADOR PRINCIPAL
-# ==========================================
 def unificar_reportes():
     print(f"📁 Directorio de trabajo: {base_path}\n")
 
@@ -543,11 +528,10 @@ def unificar_reportes():
     df_final = df_final[columnas]
 
     # ==========================================
-    # 🎨 PASO 5: GENERACIÓN DEL EXCEL CON FORMATO
+    # 🎨 PASO 5: GENERACIÓN DEL EXCEL CON FORMATO Y APERTURA AUTOMÁTICA
     # ==========================================
     nombre_archivo = os.path.join(base_path, f"Reporte_Auditoria_Unificado_{target_ola}.xlsx")
     
-    # Se genera directamente el archivo Excel local
     df_final.to_excel(nombre_archivo, index=False)
 
     try:
@@ -603,6 +587,13 @@ def unificar_reportes():
     except Exception as e:
         print(f"⚠️ No se pudo aplicar formato completo al Excel: {e}")
 
+    # 📂 ABRIR EL EXCEL AUTOMÁTICAMENTE EN PANTALLA
+    try:
+        os.startfile(nombre_archivo)
+        print("🚀 ¡Reporte abierto automáticamente en Excel!")
+    except Exception as e:
+        print(f"⚠️ No se pudo abrir el archivo automáticamente: {e}")
+
     print("\n==================================================")
     print("✅ ¡PROCESO TERMINADO CON ÉXITO!")
     print(f"📁 Reporte guardado en: {nombre_archivo}")
@@ -610,6 +601,5 @@ def unificar_reportes():
     
     input("Presiona ENTER para salir...")
 
-# 🔥 PUNTO DE ENTRADA AL EJECUTAR EL EXECUTABLE
 if __name__ == '__main__':
     unificar_reportes()
