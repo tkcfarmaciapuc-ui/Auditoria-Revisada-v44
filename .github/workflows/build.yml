@@ -1,0 +1,31 @@
+name: Compilar a .EXE
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Generar ejecutable con PyInstaller
+      run: |
+        pyinstaller --onefile app_auditoria.py
+
+    - name: Subir el .EXE generado
+      uses: actions/upload-artifact@v3
+      with:
+        name: Auditoria-App-EXE
+        path: dist/app_auditoria.exe
