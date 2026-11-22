@@ -621,6 +621,11 @@ def unificar_reportes():
                     cell.font = font
 
         wb.save(nombre_archivo)
+        try:
+            os.startfile(nombre_archivo)
+            print("Abriendo archivo Excel automaticamente...")
+        except Exception as e_open:
+            print(f"No se pudo abrir el Excel automaticamente: {e_open}")
     except Exception as e:
         print(f"No se pudo aplicar formato de colores al archivo Excel: {e}")
 
